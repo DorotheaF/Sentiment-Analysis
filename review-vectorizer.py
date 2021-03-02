@@ -6,14 +6,14 @@
     #count pronouns.txt      -- 4
     #if ! then 1 else 0      -- 5
     #ln word count           -- 6
-    #bias term = 1           -- 7
+    #review class            -- 7
 import csv
 
 import numpy as np
 
 
-def vectorize(review, words, pronouns):
-    vector = ["", 0,0,0,0,0,0,1]
+def vectorize(review, words, pronouns, category):
+    vector = ["", 0,0,0,0,0,0,category]
     vector[0] = review[0:7]
     #print(review.split())
     vector[6] = np.log(len(review.split()) - 1)
@@ -27,7 +27,7 @@ def vectorize(review, words, pronouns):
         #print(word)
         value = words.get(word, "0")
         if value == 1:
-            print(word + " -- positive")
+            #print(word + " -- positive")
             vector[1] += 1
         elif value == -1:
             #print(" -- negative")
@@ -68,7 +68,7 @@ reader = open("training-data/hotelNegT-train.txt", "r", encoding="utf8")
 for review in reader:
     #review = word.split('\n')[0]
     print("reading negative review")
-    vector = vectorize(review, wordDict, pronouns)
+    vector = vectorize(review, wordDict, pronouns, 0)
     vectors.append(vector)
     print(vector)
 reader.close()
@@ -77,7 +77,7 @@ reader = open("training-data/hotelPosT-train.txt", "r", encoding="utf8")
 for review in reader:
     #review = word.split('\n')[0]
     print("reading positive review")
-    vector = vectorize(review, wordDict, pronouns)
+    vector = vectorize(review, wordDict, pronouns, 1)
     vectors.append(vector)
     print(vector)
 reader.close()
