@@ -79,7 +79,7 @@ for review in reader:
     print("reading positive review")
     vector = vectorize(review, wordDict, pronouns, 1)
     vectors.append(vector)
-    print(vector)
+    #print(vector)
 reader.close()
 
 with open("processed/reviews.csv", "w", newline='') as file:

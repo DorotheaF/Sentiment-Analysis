@@ -15,26 +15,20 @@ import numpy as np
 from decimal import Decimal
 
 def compute_gradient(rev, weights, learn_rate):
-    #print(rev)
     newWeights = [0, 0, 0, 0, 0, 0, 0]
     review = []
     y = float(rev[-1])
-    #print(y)
     rev = np.append(rev[1:7], .1)
     for x in rev:
         review.append(float(x))
-    #print(review)  # pos, neg, no, pron., !, len, bias
     review = np.array(review)
     z = review@weights
     y_hat = 1/(1+np.exp(-z))
     print(y_hat)
     #print("predicted = " + str(y_hat) + " actual= " + str(y))
     loss = -(y * np.log(y_hat)+(1-y)*np.log(1-y_hat))
-    #print("loss: " + str(loss))
-    #print(weights)
-    for index, w in enumerate(weights):
-        gradient = (y_hat - y)*review[index]
-        newWeights[index] = weights[index] - learn_rate * gradient
+    gradient = (y_hat - y)*review
+    newWeights = weights - learn_rate * gradient
     #print(weights)
     #print(newWeights)
     return np.array(newWeights)
