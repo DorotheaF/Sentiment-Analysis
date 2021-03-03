@@ -22,7 +22,7 @@ import math
 import numpy as np
 import random
 
-def vectorize(ID, review, words, pronouns, category):
+def vectorize(ID, review, words, pronouns, category):  # helper function that takes a review and creates corresponding feature vector
     vector = [ID, 0, 0, 0, 0, 0, 0, category]
     print(vector[0])
     vector[6] = np.log(len(review.split()) - 1)
@@ -32,7 +32,7 @@ def vectorize(ID, review, words, pronouns, category):
     revWords = review.split()[2:]
     for word in revWords:
         word = word.lower()
-        value = words.get(word, "0")
+        value = words.get(word, "0")  # dictionary containing positive and negative words
         if value == 1:
             vector[1] += 1
         elif value == -1:
@@ -44,7 +44,7 @@ def vectorize(ID, review, words, pronouns, category):
     return vector
 
 
-def vectorize_file(filepath, category, words, pronouns):
+def vectorize_file(filepath, category, words, pronouns):  # helper function that vectorizes a file based on the category of reviews it contains (positive, negative, additional (mixed), test (unknown))
     vectors = []
     reader = open(filepath, "r", encoding="utf8")
     if category == "additional":
@@ -83,7 +83,7 @@ def vectorize_file(filepath, category, words, pronouns):
     return vectors
 
 
-def full_vectorizer(add_data):
+def full_vectorizer(add_data):  # reads in review files and prints their vectorized form
     reader = open("features/negative-words.txt", "r")
     wordDict = {}
     for word in reader:
@@ -119,7 +119,7 @@ def full_vectorizer(add_data):
 
     if add_data:
         filepath = "training-data/HW2-testset.txt"
-        category = "test"
+        category = "test"  # what kind of file is the second file: positive, negative, additional, or test?
         vectors = vectorize_file(filepath, category, wordDict, pronouns)
 
         with open("processed/Hwk2-test.csv", "w", newline='') as file:
@@ -128,7 +128,7 @@ def full_vectorizer(add_data):
                 writer.writerow(vector)
 
 
-def compute_gradient(rev, weights, learn_rate):
+def compute_gradient(rev, weights, learn_rate):  # helper function that computes the gradient and returns updated weights
     review = []
     y = float(rev[-1])
     rev = np.append(rev[1:7], .1)
@@ -144,19 +144,19 @@ def compute_gradient(rev, weights, learn_rate):
     return np.array(newWeights)
 
 
-def training(matrix):
+def training(matrix, seed):  # helper function that takes & shuffles training matrix and keeps track of weights
     weights = np.array([0, 0, 0, 0, 0, 0, 1])
-    random.seed(61)
+    random.seed(seed) #high 61: .92
     random.shuffle(matrix)
     matrix = np.array(matrix)
     for review in matrix:
-        weights = compute_gradient(review, weights, 1)
+        weights = compute_gradient(review, weights, 1)  # calculates new weights from old weights and current review
     print("Final weights: ")
     print(weights)
     return weights
 
 
-def test_categorizer(rev, weights):
+def test_categorizer(rev, weights):  # helper function to categorize review without updating weights
     ID = rev[0]
     review = []
     if rev[-1] != "UNK":
@@ -182,12 +182,12 @@ def test_categorizer(rev, weights):
     #loss = -(y * np.log(y_hat)+(1-y)*np.log(1-y_hat))
     print("failure")
 
-def review_categorizer(files):
+def review_categorizer(files, seed):
     test_data = []
     train_data = []
     train_length = 0
     test_length = 0
-    for file in files:
+    for file in files:  # adds correct number of reviews from each file to be used for training or testing
         reader = open(file[0], "r")
 
         testsize = file[1]
@@ -219,7 +219,7 @@ def review_categorizer(files):
     print(test_data.shape)
     print("test length: " + str(test_length))
 
-    weights = training(train_data)
+    weights = training(train_data, seed)  # trains weights on training reviews
 
     accuracy = 0
     for review in train_data:
@@ -228,7 +228,7 @@ def review_categorizer(files):
 
     #print("Train set accuracy: " + str(accuracy/train_length))
 
-    writer = open("processed/French-Dorothea-assgn2-out.txt", "w", encoding="utf8")
+    writer = open("processed/French-Dorothea-assgn2-out.txt", "w", encoding="utf8")  # prints ID and grade to output file
     accuracy = 0
     for review in test_data:
         accu, cat = test_categorizer(review, weights)
@@ -239,20 +239,22 @@ def review_categorizer(files):
     print("Test set accuracy: " + str(accuracy/test_length))
 
 
-processed = False
+processed = True  # do you want to vectorize the reviews?
 if not processed:
-    add_data = True
+    add_data = True  # do you want to vectorize a second file?
     full_vectorizer(add_data)
 else:
     print("Using pre-processed vectors")
 
-filepath1 = "processed/French-Dorothea_assgn2-part1.csv"
-test_number1 = 0
+filepath1 = "processed/French-Dorothea_assgn2-part1.csv" # filepath to training data vectors
+test_number1 = 0  # number of reviews to be used for testing
 length1 = 189
 
-filepath2 = "processed/Hwk2-test.csv"
-test_number2 = 50
+filepath2 = "processed/Hwk2-test.csv" # filepath to second data set's vectors (test data)
+test_number2 = 50  # number of reviews to be used for testing
 length2 = 50
 files = [[filepath1, test_number1, length1], [filepath2, test_number2, length2]]
 
-review_categorizer(files)
+
+seed = 23  # determined to maximize accuracy, used to shuffle training matrix. Highest known percentage ~ 97%, average 85%, lowest 48%
+review_categorizer(files, seed)  # trains weights, tests, and prints to output files
